@@ -15,6 +15,7 @@ runtime = "1.9.2"
 material = "1.12.0"
 ui = "1.9.2"
 material3 = "1.4.0"
+books = "1.0.0"
 
 [libraries]
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
@@ -38,6 +39,7 @@ androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime
 androidx-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+books = { group = "com.google.android.mediahome", name = "books", version.ref = "books" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
