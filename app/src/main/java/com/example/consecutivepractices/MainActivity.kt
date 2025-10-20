@@ -1,20 +1,25 @@
 package com.example.consecutivepractices
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -22,11 +27,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.consecutivepractices.data.Book
-import com.example.consecutivepractices.ui.screens.BookListScreen
 import com.example.consecutivepractices.ui.screens.BookDetailsScreen
+import com.example.consecutivepractices.ui.screens.BookListScreen
 import com.example.consecutivepractices.ui.theme.BookAppTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,21 +43,32 @@ class MainActivity : ComponentActivity() {
                 val currentRoute = navBackStackEntry?.destination?.route
 
                 Scaffold(
+                    topBar = {
+                        when (currentRoute) {
+                            NavRoutes.BOOK_LIST -> BookListTopAppBar()
+                            NavRoutes.BOOK_DETAILS -> BookDetailsTopAppBar()
+                        }
+                    },
                     bottomBar = {
-                        if (currentRoute != "book_details/{bookId}") {
+                        if (currentRoute != NavRoutes.BOOK_DETAILS) {
                             BottomNavigationBar(navController, currentRoute)
                         }
                     }
                 ) { padding ->
                     NavHost(
                         navController,
-                        startDestination = "book_list",
+                        startDestination = NavRoutes.BOOK_LIST,
                         modifier = Modifier.padding(padding)
                     ) {
-                        composable("book_list") { BookListScreen(navController) }
-                        composable("book_details/{bookId}") { backStackEntry ->
+                        composable(NavRoutes.BOOK_LIST) {
+                            BookListScreen(navController = navController)
+                        }
+                        composable("${NavRoutes.BOOK_DETAILS}/{bookId}") { backStackEntry ->
                             val bookId = backStackEntry.arguments?.getString("bookId")?.toIntOrNull()
-                            BookDetailsScreen(bookId, navController)
+                            BookDetailsScreen(
+                                navController = navController,
+                                bookId = bookId
+                            )
                         }
                     }
                 }
@@ -60,14 +77,37 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-fun shareBook(context: android.content.Context, book: Book) {
-    val shareIntent = Intent(Intent.ACTION_SEND).apply {
-        type = "text/plain"
-        putExtra(Intent.EXTRA_SUBJECT, "Check out this book!")
-        putExtra(Intent.EXTRA_TEXT, "Movie: ${book.title} (${book.year})\nRating: ${book.rating}\nGenre: ${book.genre}\nAuthor: ${book.author}\nSynopsis: ${book.synopsis}\nShare this awesome book!")
-    }
-    context.startActivity(Intent.createChooser(shareIntent, "Share via"))
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BookListTopAppBar() {
+    TopAppBar(
+        title = { Text("Список книг") },
+        actions = {
+            IconButton(onClick = { /* Add functionality later */ }) {
+                Icon(Icons.Default.Add, contentDescription = "Добавить книгу")
+            }
+        }
+    )
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BookDetailsTopAppBar() {
+    TopAppBar(
+        title = { Text("Подробности о книге") },
+        navigationIcon = {
+            IconButton(onClick = { }) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            }
+        },
+        actions = {
+            IconButton(onClick = { }) {
+                Icon(Icons.Default.Share, contentDescription = "Share")
+            }
+        }
+    )
+}
+
 
 @Composable
 fun BottomNavigationBar(navController: androidx.navigation.NavController, currentRoute: String?) {
