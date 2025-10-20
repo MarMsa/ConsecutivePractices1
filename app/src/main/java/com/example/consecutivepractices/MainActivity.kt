@@ -45,7 +45,6 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     topBar = {
                         when (currentRoute) {
-                            NavRoutes.BOOK_LIST -> BookListTopAppBar()
                             NavRoutes.BOOK_DETAILS -> BookDetailsTopAppBar()
                         }
                     },
@@ -64,7 +63,7 @@ class MainActivity : ComponentActivity() {
                             BookListScreen(navController = navController)
                         }
                         composable("${NavRoutes.BOOK_DETAILS}/{bookId}") { backStackEntry ->
-                            val bookId = backStackEntry.arguments?.getString("bookId")?.toIntOrNull()
+                            val bookId = backStackEntry.arguments?.getString("bookId")
                             BookDetailsScreen(
                                 navController = navController,
                                 bookId = bookId
@@ -77,18 +76,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun BookListTopAppBar() {
-    TopAppBar(
-        title = { Text("Список книг") },
-        actions = {
-            IconButton(onClick = { /* Add functionality later */ }) {
-                Icon(Icons.Default.Add, contentDescription = "Добавить книгу")
-            }
-        }
-    )
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
