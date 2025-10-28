@@ -6,6 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.consecutivepractices.domain.models.Book
+import com.example.consecutivepractices.domain.repository.BookRepository
 import com.example.consecutivepractices.domain.usecase.GetBookDetailsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +18,8 @@ import javax.inject.Inject
 @HiltViewModel
 class BookDetailsViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val getBookDetailsUseCase: GetBookDetailsUseCase
+    private val getBookDetailsUseCase: GetBookDetailsUseCase,
+    private val repository: BookRepository
 ) : ViewModel() {
 
     private val _book = MutableStateFlow<Book?>(null)
@@ -28,6 +30,9 @@ class BookDetailsViewModel @Inject constructor(
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
+
+    private val _isFavorite = MutableStateFlow(false)
+    val isFavorite: StateFlow<Boolean> = _isFavorite.asStateFlow()
 
     init {
         loadBookDetails()
@@ -42,12 +47,15 @@ class BookDetailsViewModel @Inject constructor(
                 _error.value = null
 
                 try {
+                    // Загружаем детали книги
                     val result = getBookDetailsUseCase(bookId = id)
 
                     _isLoading.value = false
 
                     result.onSuccess { bookDetails ->
                         _book.value = bookDetails
+                        // Проверяем, есть ли книга в избранном
+                        checkIfFavorite(bookDetails.id)
                     }.onFailure { exception ->
                         _error.value = "Ошибка загрузки деталей книги: ${exception.message}"
                     }
@@ -58,6 +66,24 @@ class BookDetailsViewModel @Inject constructor(
             }
         } ?: run {
             _error.value = "ID книги не найден"
+        }
+    }
+
+    private suspend fun checkIfFavorite(bookId: String) {
+        _isFavorite.value = repository.isBookFavorite(bookId)
+    }
+
+    fun toggleFavorite() {
+        viewModelScope.launch {
+            _book.value?.let { book ->
+                if (_isFavorite.value) {
+                    repository.removeFromFavorites(book.id)
+                    _isFavorite.value = false
+                } else {
+                    repository.addToFavorites(book)
+                    _isFavorite.value = true
+                }
+            }
         }
     }
 

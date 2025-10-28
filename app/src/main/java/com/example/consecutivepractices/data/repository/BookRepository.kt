@@ -1,6 +1,8 @@
 package com.example.consecutivepractices.domain.repository
 
 import com.example.consecutivepractices.domain.models.Book
+import com.example.consecutivepractices.domain.models.FilterPreferences
+import kotlinx.coroutines.flow.Flow
 
 interface BookRepository {
     suspend fun searchBooks(
@@ -25,5 +27,15 @@ interface BookRepository {
         maxResults: Int = 20,
         startIndex: Int = 0
     ): Result<List<Book>>
+
     suspend fun getBookDetails(bookId: String): Result<Book>
+
+    fun getFavoriteBooks(): Flow<List<Book>>
+    suspend fun addToFavorites(book: Book)
+    suspend fun removeFromFavorites(bookId: String)
+    suspend fun isBookFavorite(bookId: String): Boolean
+
+    fun getFilterPreferences(): Flow<FilterPreferences>
+    suspend fun updateFilterPreferences(filterPreferences: FilterPreferences)
+    suspend fun clearFilterPreferences()
 }

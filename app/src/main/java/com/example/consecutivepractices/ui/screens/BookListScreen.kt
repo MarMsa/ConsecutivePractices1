@@ -16,9 +16,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -53,7 +57,6 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.consecutivepractices.viewmodel.BookListViewModel
-import com.google.android.mediahome.books.BookItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,6 +67,7 @@ fun BookListScreen(
     val books by viewModel.books.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+    val showFilterBadge by viewModel.showFilterBadge.collectAsState()
 
     var searchQuery by remember { mutableStateOf("") }
     var isSearching by remember { mutableStateOf(false) }
@@ -97,6 +101,37 @@ fun BookListScreen(
                     }
                 },
                 actions = {
+                    // Кнопка избранного
+                    IconButton(
+                        onClick = {
+                            navController.navigate("favorites") {
+                                launchSingleTop = true
+                            }
+                        }
+                    ) {
+                        Icon(Icons.Default.Favorite, contentDescription = "Избранное")
+                    }
+
+                    // Кнопка фильтров с бейджем
+                    IconButton(
+                        onClick = {
+                            navController.navigate("filters") {
+                                launchSingleTop = true
+                            }
+                        }
+                    ) {
+                        BadgedBox(
+                            badge = {
+                                if (showFilterBadge) {
+                                    Badge()
+                                }
+                            }
+                        ) {
+                            Icon(Icons.Default.MoreVert, contentDescription = "Фильтры")
+                        }
+                    }
+
+                    // Кнопка поиска
                     IconButton(
                         onClick = {
                             isSearching = !isSearching
@@ -111,6 +146,8 @@ fun BookListScreen(
                             contentDescription = if (isSearching) "Закрыть поиск" else "Поиск"
                         )
                     }
+
+                    // Кнопка обновления
                     IconButton(
                         onClick = {
                             if (isSearching && searchQuery.isNotBlank()) {
@@ -131,7 +168,6 @@ fun BookListScreen(
                 .padding(paddingValues)
                 .fillMaxSize()
         ) {
-
             if (isLoading && books.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -187,7 +223,7 @@ fun BookListScreen(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(books) { book ->
+                    items(books, key = { it.id }) { book ->
                         BookItem(
                             book = book,
                             onItemClick = {
@@ -241,7 +277,6 @@ fun BookItem(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-
             if (book.imageUrl.isNotEmpty()) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -256,7 +291,6 @@ fun BookItem(
                 )
                 Spacer(modifier = Modifier.padding(horizontal = 12.dp))
             } else {
-
                 Box(
                     modifier = Modifier
                         .size(80.dp)
@@ -265,7 +299,7 @@ fun BookItem(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        Icons.Default.Star,
+                        Icons.Default.Favorite,
                         contentDescription = "Нет обложки",
                         tint = Color.Gray,
                         modifier = Modifier.size(32.dp)
@@ -273,7 +307,6 @@ fun BookItem(
                 }
                 Spacer(modifier = Modifier.padding(horizontal = 12.dp))
             }
-
 
             Column(
                 modifier = Modifier.weight(1f)
@@ -326,5 +359,4 @@ fun BookItem(
             }
         }
     }
-
 }
