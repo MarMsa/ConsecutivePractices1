@@ -5,8 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
@@ -29,6 +29,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.consecutivepractices.ui.screens.BookDetailsScreen
 import com.example.consecutivepractices.ui.screens.BookListScreen
+import com.example.consecutivepractices.ui.screens.FavoritesScreen
+import com.example.consecutivepractices.ui.screens.FilterScreen
 import com.example.consecutivepractices.ui.theme.BookAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -45,11 +47,14 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     topBar = {
                         when (currentRoute) {
-                            NavRoutes.BOOK_DETAILS -> BookDetailsTopAppBar()
+                            NavRoutes.BOOK_DETAILS -> BookDetailsTopAppBar(navController)
+                            NavRoutes.FILTERS -> FilterTopAppBar(navController)
+                            NavRoutes.FAVORITES -> FavoritesTopAppBar(navController)
                         }
                     },
                     bottomBar = {
-                        if (currentRoute != NavRoutes.BOOK_DETAILS) {
+                        if (currentRoute != NavRoutes.BOOK_DETAILS &&
+                            currentRoute != NavRoutes.FILTERS) {
                             BottomNavigationBar(navController, currentRoute)
                         }
                     }
@@ -63,11 +68,17 @@ class MainActivity : ComponentActivity() {
                             BookListScreen(navController = navController)
                         }
                         composable("${NavRoutes.BOOK_DETAILS}/{bookId}") { backStackEntry ->
-                            val bookId = backStackEntry.arguments?.getString("bookId")
+                            val bookId = backStackEntry.arguments?.getString("bookId")?.toIntOrNull()
                             BookDetailsScreen(
                                 navController = navController,
-                                bookId = bookId
+                                bookId = bookId as String?
                             )
+                        }
+                        composable(NavRoutes.FILTERS) {
+                            FilterScreen(navController = navController)
+                        }
+                        composable(NavRoutes.FAVORITES) {
+                            FavoritesScreen(navController = navController)
                         }
                     }
                 }
@@ -79,47 +90,73 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BookDetailsTopAppBar() {
+fun BookDetailsTopAppBar(navController: androidx.navigation.NavController) {
     TopAppBar(
         title = { Text("Подробности о книге") },
         navigationIcon = {
-            IconButton(onClick = { }) {
+            IconButton(onClick = { navController.popBackStack() }) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-            }
-        },
-        actions = {
-            IconButton(onClick = { }) {
-                Icon(Icons.Default.Share, contentDescription = "Share")
             }
         }
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FilterTopAppBar(navController: androidx.navigation.NavController) {
+    TopAppBar(
+        title = { Text("Фильтры") },
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FavoritesTopAppBar(navController: androidx.navigation.NavController) {
+    TopAppBar(
+        title = { Text("Избранное") },
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            }
+        }
+    )
+}
 
 @Composable
 fun BottomNavigationBar(navController: androidx.navigation.NavController, currentRoute: String?) {
     NavigationBar {
         NavigationBarItem(
-            selected = currentRoute == "home",
-            onClick = { navController.navigate("home") { launchSingleTop = true } },
+            selected = currentRoute == NavRoutes.HOME,
+            onClick = { navController.navigate(NavRoutes.HOME) { launchSingleTop = true } },
             icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
             label = { Text("Home") }
         )
         NavigationBarItem(
-            selected = currentRoute == "book_list",
-            onClick = { navController.navigate("book_list") { launchSingleTop = true } },
+            selected = currentRoute == NavRoutes.BOOK_LIST,
+            onClick = { navController.navigate(NavRoutes.BOOK_LIST) { launchSingleTop = true } },
             icon = { Icon(Icons.Filled.Menu, contentDescription = "Books") },
             label = { Text("Books") }
         )
         NavigationBarItem(
-            selected = currentRoute == "video",
-            onClick = { navController.navigate("video") { launchSingleTop = true } },
+            selected = currentRoute == NavRoutes.FAVORITES,
+            onClick = { navController.navigate(NavRoutes.FAVORITES) { launchSingleTop = true } },
+            icon = { Icon(Icons.Filled.Favorite, contentDescription = "Favorites") },
+            label = { Text("Favorites") }
+        )
+        NavigationBarItem(
+            selected = currentRoute == NavRoutes.VIDEO,
+            onClick = { navController.navigate(NavRoutes.VIDEO) { launchSingleTop = true } },
             icon = { Icon(Icons.Filled.PlayArrow, contentDescription = "Video") },
             label = { Text("Video") }
         )
         NavigationBarItem(
-            selected = currentRoute == "notifications",
-            onClick = { navController.navigate("notifications") { launchSingleTop = true } },
+            selected = currentRoute == NavRoutes.NOTIFICATIONS,
+            onClick = { navController.navigate(NavRoutes.NOTIFICATIONS) { launchSingleTop = true } },
             icon = { Icon(Icons.Filled.Notifications, contentDescription = "Notifications") },
             label = { Text("Bell") }
         )
