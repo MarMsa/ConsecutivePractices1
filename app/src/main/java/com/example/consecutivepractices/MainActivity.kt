@@ -10,8 +10,8 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,6 +31,8 @@ import com.example.consecutivepractices.ui.screens.BookDetailsScreen
 import com.example.consecutivepractices.ui.screens.BookListScreen
 import com.example.consecutivepractices.ui.screens.FavoritesScreen
 import com.example.consecutivepractices.ui.screens.FilterScreen
+import com.example.consecutivepractices.ui.screens.ProfileEditScreen
+import com.example.consecutivepractices.ui.screens.ProfileScreen
 import com.example.consecutivepractices.ui.theme.BookAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -47,38 +49,47 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     topBar = {
                         when (currentRoute) {
-                            NavRoutes.BOOK_DETAILS -> BookDetailsTopAppBar(navController)
-                            NavRoutes.FILTERS -> FilterTopAppBar(navController)
-                            NavRoutes.FAVORITES -> FavoritesTopAppBar(navController)
+                            NavigationRoutes.BOOK_DETAILS -> BookDetailsTopAppBar(navController)
+                            NavigationRoutes.FILTERS -> FilterTopAppBar(navController)
+                            NavigationRoutes.FAVORITES -> FavoritesTopAppBar(navController)
+                            NavigationRoutes.PROFILE -> ProfileTopAppBar(navController)
+                            NavigationRoutes.PROFILE_EDIT -> ProfileEditTopAppBar(navController)
                         }
                     },
                     bottomBar = {
-                        if (currentRoute != NavRoutes.BOOK_DETAILS &&
-                            currentRoute != NavRoutes.FILTERS) {
+                        if (currentRoute != NavigationRoutes.BOOK_DETAILS &&
+                            currentRoute != NavigationRoutes.FILTERS &&
+                            currentRoute != NavigationRoutes.PROFILE_EDIT) {
                             BottomNavigationBar(navController, currentRoute)
                         }
                     }
                 ) { padding ->
                     NavHost(
                         navController,
-                        startDestination = NavRoutes.BOOK_LIST,
+                        startDestination = NavigationRoutes.BOOK_LIST,
                         modifier = Modifier.padding(padding)
                     ) {
-                        composable(NavRoutes.BOOK_LIST) {
+                        composable(NavigationRoutes.BOOK_LIST) {
                             BookListScreen(navController = navController)
                         }
-                        composable("${NavRoutes.BOOK_DETAILS}/{bookId}") { backStackEntry ->
+                        composable("${NavigationRoutes.BOOK_DETAILS}/{bookId}") { backStackEntry ->
                             val bookId = backStackEntry.arguments?.getString("bookId")?.toIntOrNull()
                             BookDetailsScreen(
                                 navController = navController,
                                 bookId = bookId as String?
                             )
                         }
-                        composable(NavRoutes.FILTERS) {
+                        composable(NavigationRoutes.FILTERS) {
                             FilterScreen(navController = navController)
                         }
-                        composable(NavRoutes.FAVORITES) {
+                        composable(NavigationRoutes.FAVORITES) {
                             FavoritesScreen(navController = navController)
+                        }
+                        composable(NavigationRoutes.PROFILE) {
+                            ProfileScreen(navController = navController)
+                        }
+                        composable(NavigationRoutes.PROFILE_EDIT) {
+                            ProfileEditScreen(navController = navController)
                         }
                     }
                 }
@@ -127,38 +138,64 @@ fun FavoritesTopAppBar(navController: androidx.navigation.NavController) {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ProfileTopAppBar(navController: androidx.navigation.NavController) {
+    TopAppBar(
+        title = { Text("Профиль") },
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ProfileEditTopAppBar(navController: androidx.navigation.NavController) {
+    TopAppBar(
+        title = { Text("Редактирование профиля") },
+        navigationIcon = {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            }
+        }
+    )
+}
+
 @Composable
 fun BottomNavigationBar(navController: androidx.navigation.NavController, currentRoute: String?) {
     NavigationBar {
         NavigationBarItem(
-            selected = currentRoute == NavRoutes.HOME,
-            onClick = { navController.navigate(NavRoutes.HOME) { launchSingleTop = true } },
+            selected = currentRoute == NavigationRoutes.HOME,
+            onClick = { navController.navigate(NavigationRoutes.HOME) { launchSingleTop = true } },
             icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
             label = { Text("Home") }
         )
         NavigationBarItem(
-            selected = currentRoute == NavRoutes.BOOK_LIST,
-            onClick = { navController.navigate(NavRoutes.BOOK_LIST) { launchSingleTop = true } },
+            selected = currentRoute == NavigationRoutes.BOOK_LIST,
+            onClick = { navController.navigate(NavigationRoutes.BOOK_LIST) { launchSingleTop = true } },
             icon = { Icon(Icons.Filled.Menu, contentDescription = "Books") },
             label = { Text("Books") }
         )
         NavigationBarItem(
-            selected = currentRoute == NavRoutes.FAVORITES,
-            onClick = { navController.navigate(NavRoutes.FAVORITES) { launchSingleTop = true } },
+            selected = currentRoute == NavigationRoutes.FAVORITES,
+            onClick = { navController.navigate(NavigationRoutes.FAVORITES) { launchSingleTop = true } },
             icon = { Icon(Icons.Filled.Favorite, contentDescription = "Favorites") },
             label = { Text("Favorites") }
         )
         NavigationBarItem(
-            selected = currentRoute == NavRoutes.VIDEO,
-            onClick = { navController.navigate(NavRoutes.VIDEO) { launchSingleTop = true } },
+            selected = currentRoute == NavigationRoutes.VIDEO,
+            onClick = { navController.navigate(NavigationRoutes.VIDEO) { launchSingleTop = true } },
             icon = { Icon(Icons.Filled.PlayArrow, contentDescription = "Video") },
             label = { Text("Video") }
         )
         NavigationBarItem(
-            selected = currentRoute == NavRoutes.NOTIFICATIONS,
-            onClick = { navController.navigate(NavRoutes.NOTIFICATIONS) { launchSingleTop = true } },
-            icon = { Icon(Icons.Filled.Notifications, contentDescription = "Notifications") },
-            label = { Text("Bell") }
+            selected = currentRoute == NavigationRoutes.PROFILE,
+            onClick = { navController.navigate(NavigationRoutes.PROFILE) { launchSingleTop = true } },
+            icon = { Icon(Icons.Filled.Person, contentDescription = "Profile") },
+            label = { Text("Profile") }
         )
     }
 }
