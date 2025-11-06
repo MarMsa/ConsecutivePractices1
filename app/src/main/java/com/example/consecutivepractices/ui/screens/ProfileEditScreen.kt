@@ -23,7 +23,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Face
@@ -31,14 +30,10 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -63,7 +58,6 @@ import com.example.consecutivepractices.utils.rememberCameraPermissionLauncher
 import com.example.consecutivepractices.utils.rememberGalleryPermissionLauncher
 import com.example.consecutivepractices.viewmodel.ProfileEditViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileEditScreen(
     navController: NavController,
@@ -91,6 +85,7 @@ fun ProfileEditScreen(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         if (success) {
+            // URI уже установлен через ImagePicker.createImageUri
         }
     }
 
@@ -101,6 +96,7 @@ fun ProfileEditScreen(
             )
         },
         onDenied = {
+            // Можно показать сообщение об отказе в разрешении
         }
     )
 
@@ -111,9 +107,11 @@ fun ProfileEditScreen(
             cameraLauncher.launch(uri)
         },
         onDenied = {
+            // Можно показать сообщение об отказе в разрешении
         }
     )
 
+    // Обработка успешного сохранения
     LaunchedEffect(saveSuccess) {
         if (saveSuccess) {
             navController.popBackStack()
@@ -121,219 +119,191 @@ fun ProfileEditScreen(
         }
     }
 
+    // Обновляем поля при изменении профиля
     LaunchedEffect(profile) {
         fullName = profile.fullName
         resumeUrl = profile.resumeUrl
         position = profile.position
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Редактирование профиля") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
-                    }
-                },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            viewModel.updateFullName(fullName)
-                            viewModel.updateResumeUrl(resumeUrl)
-                            viewModel.updatePosition(position)
-                            viewModel.saveProfile()
-                        },
-                        enabled = !isSaving && fullName.isNotBlank()
-                    ) {
-                        if (isSaving) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Icon(Icons.Default.Check, contentDescription = "Сохранить")
-                        }
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Аватар с возможностью изменения
         Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .clickable { showImageSourceDialog = true },
+                contentAlignment = Alignment.Center
             ) {
+                if (profile.avatarUri.isNotEmpty()) {
+                    Image(
+                        painter = rememberAsyncImagePainter(
+                            ImageRequest.Builder(LocalContext.current)
+                                .data(profile.avatarUri)
+                                .build()
+                        ),
+                        contentDescription = "Аватар",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        Icons.Default.Person,
+                        contentDescription = "Аватар",
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+
+                // Иконка редактирования
                 Box(
                     modifier = Modifier
-                        .size(120.dp)
+                        .align(Alignment.BottomEnd)
+                        .size(32.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer)
-                        .clickable { showImageSourceDialog = true },
+                        .background(MaterialTheme.colorScheme.primary),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (profile.avatarUri.isNotEmpty()) {
-                        Image(
-                            painter = rememberAsyncImagePainter(
-                                ImageRequest.Builder(LocalContext.current)
-                                    .data(profile.avatarUri)
-                                    .build()
-                            ),
-                            contentDescription = "Аватар",
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Icon(
-                            Icons.Default.Person,
-                            contentDescription = "Аватар",
-                            modifier = Modifier.size(48.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Default.Edit,
-                            contentDescription = "Изменить фото",
-                            modifier = Modifier.size(18.dp),
-                            tint = MaterialTheme.colorScheme.onPrimary
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Нажмите для изменения фото",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                )
-            }
-
-            OutlinedTextField(
-                value = fullName,
-                onValueChange = { fullName = it },
-                label = { Text("ФИО *") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                isError = fullName.isBlank()
-            )
-
-            OutlinedTextField(
-                value = position,
-                onValueChange = { position = it },
-                label = { Text("Должность") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            OutlinedTextField(
-                value = resumeUrl,
-                onValueChange = { resumeUrl = it },
-                label = { Text("Ссылка на резюме (URL)") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                placeholder = { Text("https://example.com/resume.pdf") }
-            )
-
-            Button(
-                onClick = {
-                    viewModel.updateFullName(fullName)
-                    viewModel.updateResumeUrl(resumeUrl)
-                    viewModel.updatePosition(position)
-                    viewModel.saveProfile()
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                enabled = !isSaving && fullName.isNotBlank(),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                if (isSaving) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onPrimary
+                    Icon(
+                        Icons.Default.Edit,
+                        contentDescription = "Изменить фото",
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
-                    Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-                    Text("Сохранение...")
-                } else {
-                    Icon(Icons.Default.Check, contentDescription = "Сохранить")
-                    Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-                    Text("Готово")
                 }
             }
-        }
-
-        if (showImageSourceDialog) {
-            AlertDialog(
-                onDismissRequest = { showImageSourceDialog = false },
-                title = { Text("Выберите источник") },
-                text = {
-                    Column {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    showImageSourceDialog = false
-                                    if (PermissionManager.hasGalleryPermission(context)) {
-                                        galleryLauncher.launch(
-                                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                        )
-                                    } else {
-                                        galleryPermissionLauncher.launch(PermissionManager.getGalleryPermissions())
-                                    }
-                                }
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(Icons.Default.Face, contentDescription = "Галерея")
-                            Text("Галерея")
-                        }
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    showImageSourceDialog = false
-                                    if (PermissionManager.hasCameraPermission(context)) {
-                                        val uri = ImagePicker.createImageUri(context)
-                                        viewModel.updateAvatarUri(uri.toString())
-                                        cameraLauncher.launch(uri)
-                                    } else {
-                                        cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-                                    }
-                                }
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(Icons.Default.Person, contentDescription = "Камера")
-                            Text("Камера")
-                        }
-                    }
-                },
-                confirmButton = {
-                    Button(onClick = { showImageSourceDialog = false }) {
-                        Text("Отмена")
-                    }
-                }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Нажмите для изменения фото",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
         }
+
+        // Поля формы
+        OutlinedTextField(
+            value = fullName,
+            onValueChange = { fullName = it },
+            label = { Text("ФИО *") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            isError = fullName.isBlank()
+        )
+
+        OutlinedTextField(
+            value = position,
+            onValueChange = { position = it },
+            label = { Text("Должность") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        OutlinedTextField(
+            value = resumeUrl,
+            onValueChange = { resumeUrl = it },
+            label = { Text("Ссылка на резюме (URL)") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+            placeholder = { Text("https://example.com/resume.pdf") }
+        )
+
+        // Кнопка сохранения
+        Button(
+            onClick = {
+                viewModel.updateFullName(fullName)
+                viewModel.updateResumeUrl(resumeUrl)
+                viewModel.updatePosition(position)
+                viewModel.saveProfile()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            enabled = !isSaving && fullName.isNotBlank(),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            if (isSaving) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+                Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                Text("Сохранение...")
+            } else {
+                Icon(Icons.Default.Check, contentDescription = "Сохранить")
+                Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                Text("Готово")
+            }
+        }
+    }
+
+    // Диалог выбора источника фото
+    if (showImageSourceDialog) {
+        AlertDialog(
+            onDismissRequest = { showImageSourceDialog = false },
+            title = { Text("Выберите источник") },
+            text = {
+                Column {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                showImageSourceDialog = false
+                                if (PermissionManager.hasGalleryPermission(context)) {
+                                    galleryLauncher.launch(
+                                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                    )
+                                } else {
+                                    galleryPermissionLauncher.launch(PermissionManager.getGalleryPermissions())
+                                }
+                            }
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Face, contentDescription = "Галерея")
+                        Text("Галерея")
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                showImageSourceDialog = false
+                                if (PermissionManager.hasCameraPermission(context)) {
+                                    val uri = ImagePicker.createImageUri(context)
+                                    viewModel.updateAvatarUri(uri.toString())
+                                    cameraLauncher.launch(uri)
+                                } else {
+                                    cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                                }
+                            }
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Person, contentDescription = "Камера")
+                        Text("Камера")
+                    }
+                }
+            },
+            confirmButton = {
+                Button(onClick = { showImageSourceDialog = false }) {
+                    Text("Отмена")
+                }
+            }
+        )
     }
 }

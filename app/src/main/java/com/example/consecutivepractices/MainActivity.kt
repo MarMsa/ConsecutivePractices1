@@ -4,12 +4,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,8 +23,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -34,7 +42,9 @@ import com.example.consecutivepractices.ui.screens.FilterScreen
 import com.example.consecutivepractices.ui.screens.ProfileEditScreen
 import com.example.consecutivepractices.ui.screens.ProfileScreen
 import com.example.consecutivepractices.ui.theme.BookAppTheme
+import com.example.consecutivepractices.viewmodel.ProfileEditViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -53,7 +63,7 @@ class MainActivity : ComponentActivity() {
                             NavigationRoutes.FILTERS -> FilterTopAppBar(navController)
                             NavigationRoutes.FAVORITES -> FavoritesTopAppBar(navController)
                             NavigationRoutes.PROFILE -> ProfileTopAppBar(navController)
-                            NavigationRoutes.PROFILE_EDIT -> ProfileEditTopAppBar(navController)
+                            NavigationRoutes.PROFILE_EDIT -> ProfileEditTopAppBar(navController, navBackStackEntry)
                         }
                     },
                     bottomBar = {
@@ -97,7 +107,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -147,18 +156,71 @@ fun ProfileTopAppBar(navController: androidx.navigation.NavController) {
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")
             }
+        },
+        actions = {
+            // Кнопка редактирования профиля
+            IconButton(
+                onClick = {
+                    navController.navigate(NavigationRoutes.PROFILE_EDIT) {
+                        launchSingleTop = true
+                    }
+                }
+            ) {
+                Icon(Icons.Default.Edit, contentDescription = "Редактировать профиль")
+            }
         }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileEditTopAppBar(navController: androidx.navigation.NavController) {
+fun ProfileEditTopAppBar(
+    navController: androidx.navigation.NavController,
+    navBackStackEntry: androidx.navigation.NavBackStackEntry?
+) {
+    var isSaving by remember { mutableStateOf(false) }
+    var saveSuccess by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    // Обработка успешного сохранения
+    LaunchedEffect(saveSuccess) {
+        if (saveSuccess) {
+            navController.popBackStack()
+        }
+    }
+
     TopAppBar(
         title = { Text("Редактирование профиля") },
         navigationIcon = {
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            }
+        },
+        actions = {
+            // Кнопка сохранения изменений
+            IconButton(
+                onClick = {
+                    // Здесь нужно вызвать метод сохранения из ViewModel
+                    // Пока что просто имитируем сохранение
+                    isSaving = true
+
+                    // Имитация процесса сохранения
+                    kotlinx.coroutines.GlobalScope.launch {
+                        kotlinx.coroutines.delay(1000) // Имитация задержки сети
+                        isSaving = false
+                        saveSuccess = true
+                    }
+                },
+                enabled = !isSaving
+            ) {
+                if (isSaving) {
+                    androidx.compose.material3.CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(Icons.Default.Check, contentDescription = "Сохранить изменения")
+                }
             }
         }
     )
