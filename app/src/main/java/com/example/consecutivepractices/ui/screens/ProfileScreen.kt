@@ -65,12 +65,10 @@ fun ProfileScreen(
     var downloadResult by remember { mutableStateOf<FileDownloader.DownloadResult?>(null) }
     var showBrowserDialog by remember { mutableStateOf(false) }
 
-    // Очистка результата при изменении профиля
     LaunchedEffect(profile) {
         downloadResult = null
     }
 
-    // Обработка результата загрузки
     LaunchedEffect(downloadResult) {
         downloadResult?.let { result ->
             if (result.shouldOpenInBrowser()) {
@@ -95,7 +93,6 @@ fun ProfileScreen(
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Аватар
                 Box(
                     modifier = Modifier
                         .size(120.dp)
@@ -128,7 +125,6 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Информация профиля
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -148,19 +144,11 @@ fun ProfileScreen(
                             label = "Должность",
                             value = profile.position.ifBlank { "Не указана" }
                         )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        ProfileField(
-                            label = "Email",
-                            value = profile.email.ifBlank { "Не указан" }
-                        )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Сообщение о результате загрузки
                 downloadResult?.let { result ->
                     val isError = result !is FileDownloader.DownloadResult.Success &&
                             result !is FileDownloader.DownloadResult.OpenedInBrowser
@@ -206,7 +194,6 @@ fun ProfileScreen(
                     }
                 }
 
-                // Кнопка резюме
                 if (profile.resumeUrl.isNotBlank()) {
                     Button(
                         onClick = {
@@ -276,7 +263,6 @@ fun ProfileScreen(
             }
         }
 
-        // Диалог предложения открыть в браузере
         if (showBrowserDialog) {
             AlertDialog(
                 onDismissRequest = {

@@ -85,7 +85,6 @@ fun ProfileEditScreen(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         if (success) {
-            // URI уже установлен через ImagePicker.createImageUri
         }
     }
 
@@ -96,7 +95,6 @@ fun ProfileEditScreen(
             )
         },
         onDenied = {
-            // Можно показать сообщение об отказе в разрешении
         }
     )
 
@@ -107,11 +105,9 @@ fun ProfileEditScreen(
             cameraLauncher.launch(uri)
         },
         onDenied = {
-            // Можно показать сообщение об отказе в разрешении
         }
     )
 
-    // Обработка успешного сохранения
     LaunchedEffect(saveSuccess) {
         if (saveSuccess) {
             navController.popBackStack()
@@ -119,7 +115,6 @@ fun ProfileEditScreen(
         }
     }
 
-    // Обновляем поля при изменении профиля
     LaunchedEffect(profile) {
         fullName = profile.fullName
         resumeUrl = profile.resumeUrl
@@ -133,7 +128,6 @@ fun ProfileEditScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Аватар с возможностью изменения
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -167,7 +161,6 @@ fun ProfileEditScreen(
                     )
                 }
 
-                // Иконка редактирования
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -192,7 +185,6 @@ fun ProfileEditScreen(
             )
         }
 
-        // Поля формы
         OutlinedTextField(
             value = fullName,
             onValueChange = { fullName = it },
@@ -220,7 +212,6 @@ fun ProfileEditScreen(
             placeholder = { Text("https://example.com/resume.pdf") }
         )
 
-        // Кнопка сохранения
         Button(
             onClick = {
                 viewModel.updateFullName(fullName)
@@ -250,7 +241,6 @@ fun ProfileEditScreen(
         }
     }
 
-    // Диалог выбора источника фото
     if (showImageSourceDialog) {
         AlertDialog(
             onDismissRequest = { showImageSourceDialog = false },

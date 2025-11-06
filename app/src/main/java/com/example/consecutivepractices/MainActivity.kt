@@ -158,7 +158,6 @@ fun ProfileTopAppBar(navController: androidx.navigation.NavController) {
             }
         },
         actions = {
-            // Кнопка редактирования профиля
             IconButton(
                 onClick = {
                     navController.navigate(NavigationRoutes.PROFILE_EDIT) {
@@ -182,7 +181,6 @@ fun ProfileEditTopAppBar(
     var saveSuccess by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    // Обработка успешного сохранения
     LaunchedEffect(saveSuccess) {
         if (saveSuccess) {
             navController.popBackStack()
@@ -197,16 +195,12 @@ fun ProfileEditTopAppBar(
             }
         },
         actions = {
-            // Кнопка сохранения изменений
             IconButton(
                 onClick = {
-                    // Здесь нужно вызвать метод сохранения из ViewModel
-                    // Пока что просто имитируем сохранение
                     isSaving = true
 
-                    // Имитация процесса сохранения
                     kotlinx.coroutines.GlobalScope.launch {
-                        kotlinx.coroutines.delay(1000) // Имитация задержки сети
+                        kotlinx.coroutines.delay(1000)
                         isSaving = false
                         saveSuccess = true
                     }
