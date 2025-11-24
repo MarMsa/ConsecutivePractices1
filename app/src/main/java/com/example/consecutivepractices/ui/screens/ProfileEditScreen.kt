@@ -24,16 +24,20 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -57,7 +61,9 @@ import com.example.consecutivepractices.utils.PermissionManager
 import com.example.consecutivepractices.utils.rememberCameraPermissionLauncher
 import com.example.consecutivepractices.utils.rememberGalleryPermissionLauncher
 import com.example.consecutivepractices.viewmodel.ProfileEditViewModel
+import java.util.Calendar
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileEditScreen(
     navController: NavController,
@@ -66,12 +72,21 @@ fun ProfileEditScreen(
     val profile by viewModel.profile.collectAsState()
     val isSaving by viewModel.isSaving.collectAsState()
     val saveSuccess by viewModel.saveSuccess.collectAsState()
+    val timeError by viewModel.timeError.collectAsState()
     val context = LocalContext.current
 
     var showImageSourceDialog by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
     var fullName by remember { mutableStateOf(profile.fullName) }
     var resumeUrl by remember { mutableStateOf(profile.resumeUrl) }
     var position by remember { mutableStateOf(profile.position) }
+    var favoritePairTime by remember { mutableStateOf(profile.favoritePairTime) }
+
+    // Безопасная инициализация TimePickerState
+    val timePickerState = rememberTimePickerState(
+        initialHour = getSafeHour(favoritePairTime),
+        initialMinute = getSafeMinute(favoritePairTime)
+    )
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
@@ -119,6 +134,7 @@ fun ProfileEditScreen(
         fullName = profile.fullName
         resumeUrl = profile.resumeUrl
         position = profile.position
+        favoritePairTime = profile.favoritePairTime
     }
 
     Column(
@@ -212,17 +228,48 @@ fun ProfileEditScreen(
             placeholder = { Text("https://example.com/resume.pdf") }
         )
 
+        // Новое поле для времени любимой пары
+        OutlinedTextField(
+            value = favoritePairTime,
+            onValueChange = {
+                favoritePairTime = it
+                viewModel.updateFavoritePairTime(it)
+            },
+            label = { Text("Время любимой пары") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            placeholder = { Text("HH:mm") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            isError = timeError != null,
+            trailingIcon = {
+                Icon(
+                    Icons.Default.DateRange,
+                    contentDescription = "Выбрать время",
+                    modifier = Modifier.clickable { showTimePicker = true }
+                )
+            }
+        )
+
+        if (timeError != null) {
+            Text(
+                text = timeError!!,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+
         Button(
             onClick = {
                 viewModel.updateFullName(fullName)
                 viewModel.updateResumeUrl(resumeUrl)
                 viewModel.updatePosition(position)
-                viewModel.saveProfile()
+                viewModel.updateFavoritePairTime(favoritePairTime)
+                viewModel.saveProfile(context)
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            enabled = !isSaving && fullName.isNotBlank(),
+            enabled = !isSaving && fullName.isNotBlank() && timeError == null,
             shape = RoundedCornerShape(12.dp)
         ) {
             if (isSaving) {
@@ -295,5 +342,68 @@ fun ProfileEditScreen(
                 }
             }
         )
+    }
+
+    // TimePicker Dialog
+    if (showTimePicker) {
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            title = { Text("Выберите время") },
+            text = {
+                TimePicker(state = timePickerState)
+            },
+            confirmButton = {
+                Button(onClick = {
+                    val hour = String.format("%02d", timePickerState.hour)
+                    val minute = String.format("%02d", timePickerState.minute)
+                    val time = "$hour:$minute"
+                    favoritePairTime = time
+                    viewModel.updateFavoritePairTime(time)
+                    showTimePicker = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showTimePicker = false }) {
+                    Text("Отмена")
+                }
+            }
+        )
+    }
+}
+
+// Вспомогательные функции для безопасного разбора времени
+private fun getSafeHour(time: String): Int {
+    return try {
+        if (time.isNotBlank() && time.contains(":")) {
+            val parts = time.split(":")
+            if (parts.size >= 2) {
+                parts[0].toInt().coerceIn(0, 23)
+            } else {
+                Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+            }
+        } else {
+            Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        }
+    } catch (e: Exception) {
+        Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    }
+}
+
+private fun getSafeMinute(time: String): Int {
+    return try {
+        if (time.isNotBlank() && time.contains(":")) {
+            val parts = time.split(":")
+            if (parts.size >= 2) {
+                parts[1].toInt().coerceIn(0, 59)
+            } else {
+                Calendar.getInstance().get(Calendar.MINUTE)
+            }
+        } else {
+            Calendar.getInstance().get(Calendar.MINUTE)
+        }
+    } catch (e: Exception) {
+        Calendar.getInstance().get(Calendar.MINUTE)
     }
 }

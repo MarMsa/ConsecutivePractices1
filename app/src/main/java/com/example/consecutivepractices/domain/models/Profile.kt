@@ -6,7 +6,8 @@ data class Profile(
     val avatarUri: String = "",
     val resumeUrl: String = "",
     val position: String = "",
-    val email: String = ""
+    val email: String = "",
+    val favoritePairTime: String = ""
 ) {
     fun isEmpty(): Boolean {
         return fullName.isBlank() && avatarUri.isBlank() && resumeUrl.isBlank()
