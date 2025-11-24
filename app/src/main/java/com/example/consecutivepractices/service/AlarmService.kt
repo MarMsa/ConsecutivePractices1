@@ -19,7 +19,6 @@ class AlarmService(private val context: Context) {
             set(Calendar.MINUTE, minute)
             set(Calendar.SECOND, 0)
 
-            // Если время уже прошло сегодня, установить на завтра
             if (timeInMillis <= System.currentTimeMillis()) {
                 add(Calendar.DAY_OF_YEAR, 1)
             }
@@ -33,7 +32,6 @@ class AlarmService(private val context: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Для Android 6.0+ используем setExactAndAllowWhileIdle
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
             alarmManager.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,

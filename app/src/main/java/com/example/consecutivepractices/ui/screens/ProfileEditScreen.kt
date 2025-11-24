@@ -82,7 +82,6 @@ fun ProfileEditScreen(
     var position by remember { mutableStateOf(profile.position) }
     var favoritePairTime by remember { mutableStateOf(profile.favoritePairTime) }
 
-    // Безопасная инициализация TimePickerState
     val timePickerState = rememberTimePickerState(
         initialHour = getSafeHour(favoritePairTime),
         initialMinute = getSafeMinute(favoritePairTime)
@@ -228,7 +227,6 @@ fun ProfileEditScreen(
             placeholder = { Text("https://example.com/resume.pdf") }
         )
 
-        // Новое поле для времени любимой пары
         OutlinedTextField(
             value = favoritePairTime,
             onValueChange = {
@@ -344,7 +342,6 @@ fun ProfileEditScreen(
         )
     }
 
-    // TimePicker Dialog
     if (showTimePicker) {
         AlertDialog(
             onDismissRequest = { showTimePicker = false },
@@ -373,7 +370,6 @@ fun ProfileEditScreen(
     }
 }
 
-// Вспомогательные функции для безопасного разбора времени
 private fun getSafeHour(time: String): Int {
     return try {
         if (time.isNotBlank() && time.contains(":")) {

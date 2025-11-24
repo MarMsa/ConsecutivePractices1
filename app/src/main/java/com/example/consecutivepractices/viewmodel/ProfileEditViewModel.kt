@@ -97,7 +97,6 @@ class ProfileEditViewModel @Inject constructor(
                 val profileToSave = _profile.value
                 profileRepository.saveProfile(profileToSave)
 
-                // Установить уведомление если время указано и корректно
                 if (profileToSave.favoritePairTime.isNotBlank() &&
                     isValidTimeFormat(profileToSave.favoritePairTime)) {
                     val alarmService = AlarmService(context)
@@ -109,7 +108,6 @@ class ProfileEditViewModel @Inject constructor(
 
                 _saveSuccess.value = true
             } catch (e: Exception) {
-                // Обработка ошибки
             } finally {
                 _isSaving.value = false
             }
