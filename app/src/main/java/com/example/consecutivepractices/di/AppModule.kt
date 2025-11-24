@@ -1,6 +1,7 @@
 package com.example.consecutivepractices.di
 
 import android.content.Context
+import com.example.consecutivepractices.data.local.ProfilePreferences
 import com.example.consecutivepractices.data.local.datastore.FilterPreferencesManager
 import com.example.consecutivepractices.utils.cache.BadgeCache
 import com.example.consecutivepractices.utils.cache.FavoriteCache
@@ -14,6 +15,12 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
+    @Provides
+    @Singleton
+    fun provideProfilePreferences(@ApplicationContext context: Context): ProfilePreferences {
+        return ProfilePreferences(context)
+    }
 
     @Provides
     @Singleton
