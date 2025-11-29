@@ -42,7 +42,7 @@
         </activity>
 
         <receiver
-            android:name=".receiver.AlarmReceiver"
+            android:name="com.example.core.receiver.AlarmReceiver"
             android:enabled="true"
             android:exported="false" />
 

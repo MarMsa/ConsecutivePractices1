@@ -44,8 +44,8 @@ import com.example.consecutivepractices.ui.screens.BookDetailsScreen
 import com.example.consecutivepractices.ui.screens.BookListScreen
 import com.example.consecutivepractices.ui.screens.FavoritesScreen
 import com.example.consecutivepractices.ui.screens.FilterScreen
-import com.example.consecutivepractices.ui.screens.ProfileEditScreen
-import com.example.consecutivepractices.ui.screens.ProfileScreen
+import com.example.profile.ui.screens.ProfileEditScreen
+import com.example.profile.ui.screens.ProfileScreen
 import com.example.consecutivepractices.ui.theme.BookAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch

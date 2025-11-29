@@ -1,7 +1,8 @@
 package com.example.consecutivepractices.data.repository
 
-import com.example.consecutivepractices.data.local.ProfilePreferences
-import com.example.consecutivepractices.domain.models.Profile
+import com.example.core.data.repository.ProfileRepository
+import com.example.core.data.local.ProfilePreferences
+import com.example.core.domain.models.Profile
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 

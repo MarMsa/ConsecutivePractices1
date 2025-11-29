@@ -1,7 +1,7 @@
 package com.example.consecutivepractices.di
 
-import com.example.consecutivepractices.data.repository.ProfileRepository
 import com.example.consecutivepractices.data.repository.ProfileRepositoryImpl
+import com.example.core.data.repository.ProfileRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
