@@ -6,20 +6,17 @@
         android:name="android.hardware.camera"
         android:required="false" />
     <uses-permission android:name="android.permission.INTERNET" />
-
-    <!-- Разрешения для галереи -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
-    <!-- Для Android 13+ -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-
-    <!-- Разрешение для камеры -->
     <uses-permission android:name="android.permission.CAMERA" />
-
-    <!-- Разрешение для записи файлов -->
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".MyApplication"
@@ -32,6 +29,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ConsecutivePractices"
         tools:targetApi="31">
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -43,7 +41,11 @@
             </intent-filter>
         </activity>
 
-        <!-- FileProvider для работы с файлами -->
+        <receiver
+            android:name=".receiver.AlarmReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -54,5 +56,4 @@
                 android:resource="@xml/file_paths" />
         </provider>
     </application>
-
 </manifest>
