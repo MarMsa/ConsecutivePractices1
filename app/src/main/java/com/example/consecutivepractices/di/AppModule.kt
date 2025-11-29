@@ -1,7 +1,7 @@
 package com.example.consecutivepractices.di
 
 import android.content.Context
-import com.example.consecutivepractices.data.local.ProfilePreferences
+import com.example.core.data.local.ProfilePreferences
 import com.example.consecutivepractices.data.local.datastore.FilterPreferencesManager
 import com.example.consecutivepractices.utils.cache.BadgeCache
 import com.example.consecutivepractices.utils.cache.FavoriteCache
